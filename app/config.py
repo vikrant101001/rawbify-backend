@@ -4,18 +4,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings:
-    # Database - Using SQLite for development
+    # Database - Handle Railway's PostgreSQL URL
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./rawbify.db")
+    
+    # Convert Railway's DATABASE_URL to SQLAlchemy format if needed
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     
     # API Settings
     API_V1_STR: str = "/api"
     PROJECT_NAME: str = "Rawbify Backend"
     
-    # CORS
+    # CORS - Add Railway domain
     CORS_ORIGINS: list = [
         "http://localhost:3000",  # Frontend dev
         "http://localhost:3001",
         "https://rawbify.com",    # Production frontend
+        "https://rawbify-frontend.railway.app",  # Railway frontend
+        "https://rawbify.vercel.app",  # Vercel frontend
     ]
     
     # File Upload
@@ -28,5 +34,8 @@ class Settings:
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60
+    
+    # Environment
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
 
 settings = Settings() 
