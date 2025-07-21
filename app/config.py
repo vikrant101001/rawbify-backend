@@ -36,6 +36,9 @@ class Settings:
     GMAIL_USER: str = os.getenv("GMAIL_USER", "")
     GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")
     
+    # OpenAI API for AI Processing
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60
     
