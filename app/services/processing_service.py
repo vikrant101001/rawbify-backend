@@ -159,13 +159,13 @@ class ProcessingService:
     
     @staticmethod
     def _create_ai_prompt(data_analysis: dict, user_prompt: str, df: pd.DataFrame) -> str:
-        """Create comprehensive prompt with all context - no RAG needed"""
+        """Create prompt for AI to generate executable Python code"""
         
         # Sample data for context (first 5 rows)
         sample_data = df.head(5).to_string(index=False)
         
         prompt = f"""
-You are a data analyst expert. Add new columns to a CSV dataset based on the user's request.
+You are a Python/Pandas expert. You will receive a CSV dataset and a user request to add new columns.
 
 DATASET INFO:
 - Rows: {data_analysis['shape'][0]}, Columns: {data_analysis['shape'][1]}
@@ -177,180 +177,97 @@ SAMPLE DATA (first 5 rows):
 
 USER REQUEST: {user_prompt}
 
-TASK: Create new columns based on the user's request. You can:
-1. Calculate values from existing columns
-2. Categorize data based on conditions
-3. Extract information from text fields
-4. Create derived metrics
-5. Add status/flag columns
+TASK: Generate Python pandas code to add the requested column(s) to the dataframe.
 
-RESPOND WITH JSON:
-{{
-    "new_columns": [
-        {{
-            "name": "column_name",
-            "type": "calculated|categorized|derived|text_processing",
-            "logic": "description of logic",
-            "formula": "executable logic pattern"
-        }}
-    ],
-    "explanation": "What was created and why"
-}}
+RULES:
+1. The dataframe variable is called 'df'
+2. Only use pandas operations
+3. Handle missing/null values gracefully
+4. Your code will be executed directly
+5. Return only the executable code, no explanations
 
-Generate JSON response:"""
+EXAMPLE:
+User: "add profit margin column"
+Code: df['profit_margin'] = ((df['revenue'] - df['cost']) / df['revenue'] * 100).round(2)
+
+USER REQUEST: {user_prompt}
+PYTHON CODE:"""
         
         return prompt
     
     @staticmethod
     def _get_ai_response(client, prompt: str) -> dict:
-        """Get structured response from OpenAI"""
+        """Get Python code from OpenAI"""
         try:
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",  # Fast and cost-effective for Trial V1
                 messages=[
-                    {"role": "system", "content": "You are a data analyst. Always respond with valid JSON."},
+                    {"role": "system", "content": "You are a Python/pandas expert. Generate only executable pandas code. No explanations, no markdown, just pure Python code."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_tokens=1500
+                max_tokens=500
             )
             
-            response_text = response.choices[0].message.content
-            return json.loads(response_text)
+            code = response.choices[0].message.content.strip()
             
-        except json.JSONDecodeError:
+            # Clean up the code (remove markdown if any)
+            if code.startswith("```python"):
+                code = code.replace("```python", "").replace("```", "").strip()
+            elif code.startswith("```"):
+                code = code.replace("```", "").strip()
+            
             return {
-                "new_columns": [{"name": "ai_processed", "type": "derived", "logic": "AI response parsing failed", "formula": "done"}],
-                "explanation": "AI returned invalid format"
+                "code": code,
+                "explanation": "AI generated pandas code"
             }
+            
         except Exception as e:
             return {
-                "new_columns": [{"name": "error", "type": "derived", "logic": f"AI call failed: {str(e)}", "formula": "error"}],
+                "code": "df['ai_error'] = 'AI failed'",
                 "explanation": f"AI processing error: {str(e)}"
             }
     
     @staticmethod
     def _apply_ai_logic(df: pd.DataFrame, ai_response: dict, user_prompt: str) -> pd.DataFrame:
-        """Apply AI-generated logic to create new columns"""
+        """Execute AI-generated Python code"""
         result_df = df.copy()
         
         try:
-            new_columns = ai_response.get('new_columns', [])
+            code = ai_response.get('code', '')
             
-            for col_spec in new_columns:
-                col_name = col_spec.get('name', 'ai_column')
-                col_type = col_spec.get('type', 'derived')
-                formula = col_spec.get('formula', 'done')
-                
-                try:
-                    if col_type == 'calculated':
-                        result_df = ProcessingService._apply_calculation(result_df, col_name, formula, user_prompt)
-                    elif col_type == 'categorized':
-                        result_df = ProcessingService._apply_categorization(result_df, col_name, formula, user_prompt)
-                    elif col_type == 'text_processing':
-                        result_df = ProcessingService._apply_text_processing(result_df, col_name, formula, user_prompt)
-                    else:
-                        # Default: simple derived column
-                        result_df[col_name] = formula
-                        
-                except Exception as e:
-                    result_df[col_name] = f"Error: {str(e)}"
+            if not code or code.strip() == '':
+                result_df['ai_processed'] = 'No code generated'
+                return result_df
             
-            # If no columns were added, add a default one
-            if len(new_columns) == 0:
-                result_df['ai_processed'] = 'done'
-                
+            # Execute the AI-generated code
+            # Create a safe execution environment
+            import numpy as np
+            exec_globals = {
+                'df': result_df,
+                'pd': pd,
+                'np': np,
+                '__builtins__': {
+                    'len': len,
+                    'str': str,
+                    'int': int,
+                    'float': float,
+                    'round': round,
+                    'max': max,
+                    'min': min,
+                    'sum': sum,
+                }
+            }
+            
+            # Execute the code
+            exec(code, exec_globals)
+            
+            # Get the modified dataframe
+            result_df = exec_globals['df']
+            
         except Exception as e:
-            result_df['processing_error'] = f"AI logic error: {str(e)}"
+            # If code execution fails, add error column
+            result_df['execution_error'] = f"Code error: {str(e)}"
         
         return result_df
-    
-    @staticmethod
-    def _apply_calculation(df: pd.DataFrame, col_name: str, formula: str, user_prompt: str) -> pd.DataFrame:
-        """Apply mathematical calculations"""
-        try:
-            # Common calculation patterns
-            if 'profit' in user_prompt.lower() or 'margin' in user_prompt.lower():
-                # Look for revenue/cost columns
-                revenue_col = ProcessingService._find_column(df, ['revenue', 'sales', 'income'])
-                cost_col = ProcessingService._find_column(df, ['cost', 'expense', 'cogs'])
-                
-                if revenue_col and cost_col:
-                    df[col_name] = ((df[revenue_col] - df[cost_col]) / df[revenue_col] * 100).round(2)
-                else:
-                    df[col_name] = 'Insufficient data'
-            
-            elif 'total' in user_prompt.lower() or 'sum' in user_prompt.lower():
-                # Sum numeric columns
-                numeric_cols = df.select_dtypes(include=['number']).columns
-                if len(numeric_cols) > 1:
-                    df[col_name] = df[numeric_cols].sum(axis=1)
-                else:
-                    df[col_name] = 'No numeric columns to sum'
-            
-            else:
-                df[col_name] = 'Calculated'
-                
-        except Exception as e:
-            df[col_name] = f"Calc error: {str(e)}"
-            
-        return df
-    
-    @staticmethod
-    def _apply_categorization(df: pd.DataFrame, col_name: str, formula: str, user_prompt: str) -> pd.DataFrame:
-        """Apply categorization logic"""
-        try:
-            # Common categorization patterns
-            if 'high' in user_prompt.lower() and 'low' in user_prompt.lower():
-                # Find numeric column to categorize
-                numeric_cols = df.select_dtypes(include=['number']).columns
-                if len(numeric_cols) > 0:
-                    col_to_categorize = numeric_cols[0]
-                    median_val = df[col_to_categorize].median()
-                    df[col_name] = df[col_to_categorize].apply(lambda x: 'High' if x > median_val else 'Low')
-                else:
-                    df[col_name] = 'No numeric data'
-            else:
-                df[col_name] = 'Categorized'
-                
-        except Exception as e:
-            df[col_name] = f"Category error: {str(e)}"
-            
-        return df
-    
-    @staticmethod
-    def _apply_text_processing(df: pd.DataFrame, col_name: str, formula: str, user_prompt: str) -> pd.DataFrame:
-        """Apply text processing"""
-        try:
-            if 'email' in user_prompt.lower() and 'domain' in user_prompt.lower():
-                # Extract email domain
-                email_col = ProcessingService._find_column(df, ['email', 'mail'])
-                if email_col:
-                    df[col_name] = df[email_col].str.split('@').str[1]
-                else:
-                    df[col_name] = 'No email column found'
-            
-            elif 'length' in user_prompt.lower():
-                # Text length
-                text_cols = df.select_dtypes(include=['object']).columns
-                if len(text_cols) > 0:
-                    df[col_name] = df[text_cols[0]].str.len()
-                else:
-                    df[col_name] = 'No text columns'
-            
-            else:
-                df[col_name] = 'Text processed'
-                
-        except Exception as e:
-            df[col_name] = f"Text error: {str(e)}"
-            
-        return df
-    
-    @staticmethod
-    def _find_column(df: pd.DataFrame, possible_names: list) -> str:
-        """Find column by possible names"""
-        for col in df.columns:
-            for name in possible_names:
-                if name.lower() in col.lower():
-                    return col
-        return None 
+ 
