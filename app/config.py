@@ -28,9 +28,13 @@ class Settings:
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_FILE_TYPES: list = [".xlsx", ".xls", ".csv"]
     
-    # Email (SendGrid)
+    # Email (SendGrid or Gmail SMTP)
     SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
     FROM_EMAIL: str = os.getenv("FROM_EMAIL", "noreply@rawbify.com")
+    
+    # Gmail SMTP
+    GMAIL_USER: str = os.getenv("GMAIL_USER", "")
+    GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 60
