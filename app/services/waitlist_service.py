@@ -20,20 +20,20 @@ EMAIL_TEMPLATE = '''
         <table width="100%" bgcolor="#fff" cellpadding="0" cellspacing="0" style="max-width: 480px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <tr>
             <td align="center" style="padding: 32px 24px 16px 24px;">
-              <img src="https://raw.githubusercontent.com/vikramaditya91/rawbify-assets/main/rawbify_logo.svg" alt="Rawbify Logo" width="64" height="64" style="margin-bottom: 16px;" />
+              <img src="https://rawbify.vercel.app/rawbify_logo.svg" alt="Rawbify Logo" width="64" height="64" style="margin-bottom: 16px;" />
               <h2 style="color: #2563eb; margin: 0 0 8px 0; font-size: 1.5rem;">Welcome to the Rawbify Waitlist!</h2>
               <p style="color: #334155; font-size: 1rem; margin: 0 0 16px 0;">Thank you for joining the waitlist. We're excited to have you on board!</p>
               <div style="background: #f1f5f9; border-radius: 8px; padding: 16px; margin: 16px 0;">
-                <p style="color: #64748b; font-size: 0.95rem; margin: 0 0 8px 0;">Your Waitlist ID:</p>
+                <p style="color: #64748b; font-size: 0.95rem; margin: 0 0 8px 0;">Your Waitlist ID (use this for user identification validation in the trial):</p>
                 <div style="font-size: 1.1rem; font-weight: bold; color: #2563eb; letter-spacing: 1px;">{waitlist_id}</div>
               </div>
               <p style="color: #334155; font-size: 1rem; margin: 0 0 16px 0;">Trial V1 is coming soon! You will be notified via email as soon as it's ready for you to try.</p>
-              <a href="https://rawbify.com" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-weight: 600; margin-top: 12px;">Visit Rawbify</a>
+              <a href="https://rawbify.vercel.app" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-weight: 600; margin-top: 12px;">Visit Rawbify</a>
             </td>
           </tr>
           <tr>
             <td align="center" style="padding: 16px 24px 24px 24px; color: #94a3b8; font-size: 0.9rem;">
-              &copy; 2024 Rawbify. All rights reserved.
+              &copy; 2025 Rawbify. All rights reserved.
             </td>
           </tr>
         </table>
