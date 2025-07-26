@@ -1,15 +1,20 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-sqlalchemy==2.0.23
-pydantic==2.5.0
+# Updated SQLAlchemy for Python 3.13 compatibility
+sqlalchemy>=2.0.32
+# Updated pydantic for Python 3.13 compatibility
+pydantic>=2.10.0
 python-multipart==0.0.6
 python-dotenv==1.0.0
 sendgrid==6.10.0
 email-validator==2.1.0
-pandas==2.1.4
+# Updated pandas and numpy for Python 3.13 compatibility
+pandas>=2.2.0
+numpy>=1.26.0
 openpyxl==3.1.2
-psycopg2-binary==2.9.9
-alembic==1.13.1
+# Updated psycopg2-binary for Python 3.13 compatibility
+psycopg2-binary>=2.9.10
+# Updated alembic for Python 3.13 compatibility
+alembic>=1.13.1
 # AI Processing for Trial V1
-openai>=1.0.0
-numpy>=1.24.0 
+openai>=1.0.0 
