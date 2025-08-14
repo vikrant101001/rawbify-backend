@@ -9,6 +9,7 @@ import uuid
 # AI Processing imports
 import openai
 from ..config import settings
+from .ai_prompts import AIPrompts
 
 class ProcessingService:
     # Special admin user ID for testing
@@ -164,36 +165,8 @@ class ProcessingService:
         # Sample data for context (first 5 rows)
         sample_data = df.head(5).to_string(index=False)
         
-        prompt = f"""
-You are a Python/Pandas expert. You will receive a CSV dataset and a user request to add new columns.
-
-DATASET INFO:
-- Rows: {data_analysis['shape'][0]}, Columns: {data_analysis['shape'][1]}
-- Column names: {data_analysis['columns']}
-- Data types: {data_analysis['dtypes']}
-
-SAMPLE DATA (first 5 rows):
-{sample_data}
-
-USER REQUEST: {user_prompt}
-
-TASK: Generate Python pandas code to add the requested column(s) to the dataframe.
-
-RULES:
-1. The dataframe variable is called 'df'
-2. Only use pandas operations
-3. Handle missing/null values gracefully
-4. Your code will be executed directly
-5. Return only the executable code, no explanations
-
-EXAMPLE:
-User: "add profit margin column"
-Code: df['profit_margin'] = ((df['revenue'] - df['cost']) / df['revenue'] * 100).round(2)
-
-USER REQUEST: {user_prompt}
-PYTHON CODE:"""
-        
-        return prompt
+        # Use the optimized prompt from the prompts file
+        return AIPrompts.get_data_processing_prompt(data_analysis, user_prompt, sample_data)
     
     @staticmethod
     def _get_ai_response(client, prompt: str) -> dict:
@@ -202,7 +175,7 @@ PYTHON CODE:"""
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",  # Fast and cost-effective for Trial V1
                 messages=[
-                    {"role": "system", "content": "You are a Python/pandas expert. Generate only executable pandas code. No explanations, no markdown, just pure Python code."},
+                    {"role": "system", "content": AIPrompts.get_system_message()},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
