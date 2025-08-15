@@ -1,0 +1,5 @@
+"Transform sales data into customer intelligence:
+1. Group by sales_id and calculate Customer_ID, Total_Revenue (sum), Deal_Count (count), Avg_Deal_Size (mean of total_revenue)
+2. Add Customer_Type (first customer_type), Primary_Region (first region), Preferred_Sales_Rep (first sales_rep_name)
+3. Create Customer_Tier: High for top 20% revenue, Medium for middle 60%, Low for bottom 20%
+4. Reorder columns for dashboard readiness: Customer_Tier, Customer_ID, Total_Revenue, Customer_Type, Deal_Count, Avg_Deal_Size, Primary_Region, Preferred_Sales_Rep"
