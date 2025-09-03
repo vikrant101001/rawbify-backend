@@ -24,13 +24,15 @@ class Settings:
     API_V1_STR: str = "/api"
     PROJECT_NAME: str = "Rawbify Backend"
     
-    # CORS - Add Railway domain
+    # CORS - Support multiple deployment platforms
     CORS_ORIGINS: list = [
         "http://localhost:3000",  # Frontend dev
         "http://localhost:3001",
         "https://rawbify.com",    # Production frontend
         "https://rawbify-frontend.railway.app",  # Railway frontend
         "https://rawbify.vercel.app",  # Vercel frontend
+        "https://*.vercel.app",   # All Vercel deployments
+        "https://*.railway.app",  # All Railway deployments
     ]
     
     # File Upload
