@@ -33,7 +33,8 @@ async def root():
     return {
         "message": "Rawbify Backend API",
         "version": "1.0.0",
-        "status": "running"
+        "status": "running",
+        "platform": "vercel"
     }
 
 @app.get("/health")
