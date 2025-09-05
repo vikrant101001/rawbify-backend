@@ -4,8 +4,15 @@ from .config import settings
 from .database import engine, Base
 from .api import waitlist_router, user_router, processing_router
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables (with error handling for Vercel)
+try:
+    if engine is not None:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully")
+    else:
+        print("⚠️ Database engine not available, skipping table creation")
+except Exception as e:
+    print(f"⚠️ Database table creation failed: {e}")
 
 # Create FastAPI app
 app = FastAPI(
