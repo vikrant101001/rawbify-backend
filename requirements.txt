@@ -17,4 +17,6 @@ psycopg2-binary>=2.9.10
 # Updated alembic for Python 3.13 compatibility
 alembic>=1.13.1
 # AI Processing for Trial V1
-openai>=1.0.0 
+openai>=1.0.0
+# Authentication
+PyJWT>=2.8.0 

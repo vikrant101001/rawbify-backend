@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine, Base
-from .api import waitlist_router, user_router, processing_router
+from .api import waitlist_router, user_router, processing_router, auth_router
 
 # Create database tables (with error handling for Vercel)
 try:
@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(waitlist_router, prefix=settings.API_V1_STR)
 app.include_router(user_router, prefix=settings.API_V1_STR)
 app.include_router(processing_router, prefix=settings.API_V1_STR)
+app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["authentication"])
 
 @app.get("/")
 async def root():
