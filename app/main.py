@@ -49,6 +49,45 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/db-simple")
+async def simple_database_test():
+    """Simple database connection test without SQLAlchemy"""
+    import psycopg2
+    
+    try:
+        # Try direct psycopg2 connection
+        conn = psycopg2.connect(
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
+            database=settings.DB_NAME,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            connect_timeout=10
+        )
+        
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        
+        return {
+            "status": "success",
+            "connection": "direct_psycopg2",
+            "test_query": result,
+            "message": "Direct connection works!"
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "connection": "direct_psycopg2",
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "host": settings.DB_HOST,
+            "port": settings.DB_PORT
+        }
+
 @app.get("/db-health")
 async def database_health_check():
     """Check database connection and tables"""
