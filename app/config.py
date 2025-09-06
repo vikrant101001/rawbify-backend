@@ -50,6 +50,9 @@ class Settings:
     # OpenAI API for AI Processing
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     
+    # JWT Secret Key for authentication
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-jwt-key-change-this-in-production")
+    
     def __init__(self):
         logger.info(f"🔧 Settings initialized - OPENAI_API_KEY: {bool(self.OPENAI_API_KEY)}")
         if self.OPENAI_API_KEY:
