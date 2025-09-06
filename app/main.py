@@ -55,6 +55,18 @@ async def database_health_check():
     from sqlalchemy import text
     from .database import engine, get_db
     
+    # Debug info about connection
+    debug_info = {
+        "database_url_set": bool(settings.DATABASE_URL and settings.DATABASE_URL != "sqlite:///./rawbify.db"),
+        "database_url_type": "postgresql" if settings.DATABASE_URL.startswith("postgresql") else "sqlite" if "sqlite" in settings.DATABASE_URL else "other",
+        "database_url_masked": settings.DATABASE_URL.replace(settings.DB_PASSWORD, "***") if settings.DB_PASSWORD else settings.DATABASE_URL[:50] + "...",
+        "db_host": settings.DB_HOST,
+        "db_port": settings.DB_PORT,
+        "db_name": settings.DB_NAME,
+        "db_user": settings.DB_USER,
+        "db_password_set": bool(settings.DB_PASSWORD)
+    }
+    
     try:
         # Test database connection
         with engine.connect() as connection:
@@ -84,14 +96,14 @@ async def database_health_check():
                 "test_query": test_value,
                 "tables_found": tables,
                 "user_count": user_count,
-                "database_url_set": bool(settings.DATABASE_URL and settings.DATABASE_URL != "sqlite:///./rawbify.db")
+                **debug_info
             }
             
     except Exception as e:
         return {
             "status": "error",
-            "database": "disconnected",
+            "database": "disconnected", 
             "error": str(e),
-            "database_url_set": bool(settings.DATABASE_URL and settings.DATABASE_URL != "sqlite:///./rawbify.db"),
-            "database_url_type": "postgresql" if settings.DATABASE_URL.startswith("postgresql") else "other"
+            "error_type": type(e).__name__,
+            **debug_info
         } 

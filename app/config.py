@@ -13,8 +13,19 @@ logger.info(f"🔧 .env file exists: {os.path.exists('.env')}")
 logger.info(f"🔧 OPENAI_API_KEY from os.getenv: {bool(os.getenv('OPENAI_API_KEY'))}")
 
 class Settings:
-    # Database - Handle Railway's PostgreSQL URL
+    # Database - Handle multiple connection formats
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./rawbify.db")
+    
+    # Alternative: Individual database parameters (for debugging)
+    DB_HOST: str = os.getenv("DB_HOST", "")
+    DB_PORT: str = os.getenv("DB_PORT", "5432")
+    DB_NAME: str = os.getenv("DB_NAME", "postgres")
+    DB_USER: str = os.getenv("DB_USER", "postgres")
+    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
+    
+    # Build DATABASE_URL from individual components if needed
+    if DB_HOST and DB_PASSWORD and DATABASE_URL == "sqlite:///./rawbify.db":
+        DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     
     # Convert Railway's DATABASE_URL to SQLAlchemy format if needed
     if DATABASE_URL.startswith("postgres://"):
