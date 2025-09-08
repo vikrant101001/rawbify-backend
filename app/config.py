@@ -13,31 +13,35 @@ logger.info(f"🔧 .env file exists: {os.path.exists('.env')}")
 logger.info(f"🔧 OPENAI_API_KEY from os.getenv: {bool(os.getenv('OPENAI_API_KEY'))}")
 
 class Settings:
-    # Database - Handle multiple connection formats
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./rawbify.db")
-    
-    # Alternative: Individual database parameters (for debugging)
-    DB_HOST: str = os.getenv("DB_HOST", "")
-    DB_PORT: str = os.getenv("DB_PORT", "5432")
-    DB_NAME: str = os.getenv("DB_NAME", "postgres")
-    DB_USER: str = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
-    
-    # Priority: Use DATABASE_URL if set, otherwise build from individual components
-    if DATABASE_URL and DATABASE_URL != "sqlite:///./rawbify.db":
-        # DATABASE_URL is already set, use it as-is
-        pass
-    elif DB_HOST and DB_PASSWORD:
-        # Build from individual components as fallback
-        DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    
-    # Convert Railway's DATABASE_URL to SQLAlchemy format if needed
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    
-    # API Settings
-    API_V1_STR: str = "/api"
-    PROJECT_NAME: str = "Rawbify Backend"
+    def __init__(self):
+        # Database - Handle multiple connection formats
+        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./rawbify.db")
+        
+        # Alternative: Individual database parameters (for debugging)
+        self.DB_HOST: str = os.getenv("DB_HOST", "")
+        self.DB_PORT: str = os.getenv("DB_PORT", "5432")
+        self.DB_NAME: str = os.getenv("DB_NAME", "postgres")
+        self.DB_USER: str = os.getenv("DB_USER", "postgres")
+        self.DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
+        
+        # Priority: Use DATABASE_URL if set, otherwise build from individual components
+        if self.DATABASE_URL and self.DATABASE_URL != "sqlite:///./rawbify.db":
+            # DATABASE_URL is already set, use it as-is
+            logger.info(f"🔧 Using DATABASE_URL: {self.DATABASE_URL[:50]}...")
+        elif self.DB_HOST and self.DB_PASSWORD:
+            # Build from individual components as fallback
+            self.DATABASE_URL = f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            logger.info(f"🔧 Built DATABASE_URL from components: {self.DB_HOST}:{self.DB_PORT}")
+        else:
+            logger.warning("🔧 No database configuration found, using SQLite")
+        
+        # Convert Railway's DATABASE_URL to SQLAlchemy format if needed
+        if self.DATABASE_URL.startswith("postgres://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        
+        # API Settings
+        self.API_V1_STR: str = "/api"
+        self.PROJECT_NAME: str = "Rawbify Backend"
     
     # CORS - Support multiple deployment platforms
     CORS_ORIGINS: list = [

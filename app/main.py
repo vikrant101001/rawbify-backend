@@ -69,17 +69,31 @@ async def environment_debug():
 async def simple_database_test():
     """Simple database connection test without SQLAlchemy"""
     import psycopg2
+    from urllib.parse import urlparse
     
     try:
-        # Try direct psycopg2 connection
-        conn = psycopg2.connect(
-            host=settings.DB_HOST,
-            port=settings.DB_PORT,
-            database=settings.DB_NAME,
-            user=settings.DB_USER,
-            password=settings.DB_PASSWORD,
-            connect_timeout=10
-        )
+        # Parse DATABASE_URL if available
+        if settings.DATABASE_URL and settings.DATABASE_URL != "sqlite:///./rawbify.db":
+            # Parse the DATABASE_URL
+            parsed = urlparse(settings.DATABASE_URL)
+            conn = psycopg2.connect(
+                host=parsed.hostname,
+                port=parsed.port or 5432,
+                database=parsed.path[1:],  # Remove leading slash
+                user=parsed.username,
+                password=parsed.password,
+                connect_timeout=10
+            )
+        else:
+            # Fallback to individual parameters
+            conn = psycopg2.connect(
+                host=settings.DB_HOST,
+                port=settings.DB_PORT,
+                database=settings.DB_NAME,
+                user=settings.DB_USER,
+                password=settings.DB_PASSWORD,
+                connect_timeout=10
+            )
         
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
@@ -95,13 +109,32 @@ async def simple_database_test():
         }
         
     except Exception as e:
+        # Show which connection method was attempted
+        if settings.DATABASE_URL and settings.DATABASE_URL != "sqlite:///./rawbify.db":
+            from urllib.parse import urlparse
+            parsed = urlparse(settings.DATABASE_URL)
+            connection_info = {
+                "method": "DATABASE_URL_parsed",
+                "host": parsed.hostname,
+                "port": parsed.port or 5432,
+                "database": parsed.path[1:] if parsed.path else "postgres",
+                "user": parsed.username
+            }
+        else:
+            connection_info = {
+                "method": "individual_parameters",
+                "host": settings.DB_HOST,
+                "port": settings.DB_PORT,
+                "database": settings.DB_NAME,
+                "user": settings.DB_USER
+            }
+            
         return {
             "status": "error",
             "connection": "direct_psycopg2",
             "error": str(e),
             "error_type": type(e).__name__,
-            "host": settings.DB_HOST,
-            "port": settings.DB_PORT
+            **connection_info
         }
 
 @app.get("/db-health")
