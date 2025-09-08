@@ -65,6 +65,53 @@ async def environment_debug():
         "OPENAI_KEY_SET": bool(settings.OPENAI_API_KEY)
     }
 
+@app.post("/debug/signup")
+async def debug_signup():
+    """Debug signup process with detailed error info"""
+    from sqlalchemy.orm import Session
+    from .database import get_db
+    from .services.auth_service import AuthService
+    from .schemas.user import UserSignup
+    
+    try:
+        # Test database connection
+        db = next(get_db())
+        
+        # Test user creation with debug info
+        test_user = UserSignup(username="debug_test_user", password="testpass123")
+        
+        # Try the signup process
+        result = AuthService.signup(db, test_user)
+        
+        # Clean up test user if created
+        if result.success and result.user:
+            from .models.user import User
+            user_to_delete = db.query(User).filter(User.username == "debug_test_user").first()
+            if user_to_delete:
+                db.delete(user_to_delete)
+                db.commit()
+        
+        db.close()
+        
+        return {
+            "status": "debug_complete",
+            "signup_result": {
+                "success": result.success,
+                "message": result.message,
+                "user_created": bool(result.user),
+                "token_created": bool(result.token)
+            },
+            "database_accessible": True
+        }
+        
+    except Exception as e:
+        return {
+            "status": "debug_error",
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "database_accessible": False
+        }
+
 @app.get("/db-simple")
 async def simple_database_test():
     """Simple database connection test without SQLAlchemy"""

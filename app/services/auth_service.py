@@ -48,7 +48,7 @@ class AuthService:
             return AuthResponse(
                 success=True,
                 message="Account created successfully",
-                user=UserResponse.from_orm(new_user),
+                user=UserResponse.model_validate(new_user),
                 token=token
             )
             
@@ -106,7 +106,7 @@ class AuthService:
             return AuthResponse(
                 success=True,
                 message="Signed in successfully",
-                user=UserResponse.from_orm(user),
+                user=UserResponse.model_validate(user),
                 token=token
             )
             

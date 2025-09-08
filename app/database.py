@@ -52,6 +52,8 @@ except Exception as e:
     Base = declarative_base()
 
 def get_db():
+    if SessionLocal is None:
+        raise Exception("Database not configured properly")
     db = SessionLocal()
     try:
         yield db

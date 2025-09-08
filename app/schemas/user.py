@@ -27,8 +27,7 @@ class UserResponse(BaseModel):
     is_active: bool
     trial_access_granted: bool
     
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 class AuthResponse(BaseModel):
     success: bool
