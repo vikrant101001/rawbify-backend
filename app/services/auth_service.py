@@ -41,14 +41,23 @@ class AuthService:
             db.refresh(new_user)
             
             # Create access token
-            token = create_access_token(data={"sub": new_user.username, "user_id": new_user.id})
+            token = create_access_token(data={"sub": new_user.username, "user_id": str(new_user.id)})
             
             logger.info(f"✅ User created successfully: {user_data.username}")
+            
+            # Convert to dict and ensure all values are JSON serializable
+            user_dict = {
+                "id": str(new_user.id),
+                "username": new_user.username,
+                "created_at": new_user.created_at,
+                "is_active": new_user.is_active,
+                "trial_access_granted": new_user.trial_access_granted
+            }
             
             return AuthResponse(
                 success=True,
                 message="Account created successfully",
-                user=UserResponse.model_validate(new_user),
+                user=UserResponse(**user_dict),
                 token=token
             )
             
@@ -99,14 +108,23 @@ class AuthService:
             db.commit()
             
             # Create access token
-            token = create_access_token(data={"sub": user.username, "user_id": user.id})
+            token = create_access_token(data={"sub": user.username, "user_id": str(user.id)})
             
             logger.info(f"✅ User signed in successfully: {user_data.username}")
+            
+            # Convert to dict and ensure all values are JSON serializable
+            user_dict = {
+                "id": str(user.id),
+                "username": user.username,
+                "created_at": user.created_at,
+                "is_active": user.is_active,
+                "trial_access_granted": user.trial_access_granted
+            }
             
             return AuthResponse(
                 success=True,
                 message="Signed in successfully",
-                user=UserResponse.model_validate(user),
+                user=UserResponse(**user_dict),
                 token=token
             )
             
