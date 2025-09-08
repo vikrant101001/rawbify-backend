@@ -23,8 +23,12 @@ class Settings:
     DB_USER: str = os.getenv("DB_USER", "postgres")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
     
-    # Build DATABASE_URL from individual components if needed
-    if DB_HOST and DB_PASSWORD and DATABASE_URL == "sqlite:///./rawbify.db":
+    # Priority: Use DATABASE_URL if set, otherwise build from individual components
+    if DATABASE_URL and DATABASE_URL != "sqlite:///./rawbify.db":
+        # DATABASE_URL is already set, use it as-is
+        pass
+    elif DB_HOST and DB_PASSWORD:
+        # Build from individual components as fallback
         DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     
     # Convert Railway's DATABASE_URL to SQLAlchemy format if needed

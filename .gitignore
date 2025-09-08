@@ -28,6 +28,7 @@ wheels/
 *.egg
 
 # Virtual environments
+.venv/
 venv/
 env/
 ENV/
@@ -52,3 +53,5 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+test_supabase_connection.py

@@ -49,6 +49,22 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/env-debug")
+async def environment_debug():
+    """Debug environment variables (masks sensitive data)"""
+    import os
+    
+    return {
+        "DATABASE_URL_SET": bool(os.getenv("DATABASE_URL")),
+        "DATABASE_URL_TYPE": "pooling" if "pooler.supabase.com" in (os.getenv("DATABASE_URL", "")) else "direct" if "supabase.co" in (os.getenv("DATABASE_URL", "")) else "other",
+        "DATABASE_URL_MASKED": (os.getenv("DATABASE_URL", ""))[:50] + "..." if os.getenv("DATABASE_URL") else "NOT_SET",
+        "DB_HOST_SET": bool(os.getenv("DB_HOST")),
+        "DB_HOST_VALUE": os.getenv("DB_HOST", "NOT_SET"),
+        "SETTINGS_DATABASE_URL": settings.DATABASE_URL[:50] + "..." if settings.DATABASE_URL else "NOT_SET",
+        "SETTINGS_DB_HOST": settings.DB_HOST or "NOT_SET",
+        "OPENAI_KEY_SET": bool(settings.OPENAI_API_KEY)
+    }
+
 @app.get("/db-simple")
 async def simple_database_test():
     """Simple database connection test without SQLAlchemy"""

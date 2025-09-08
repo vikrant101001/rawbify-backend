@@ -18,11 +18,24 @@ try:
         logger.info("✅ Using SQLite database")
     else:
         # PostgreSQL configuration (for production)
+        connect_args = {}
+        
+        # Add SSL configuration for Supabase
+        if "supabase.co" in settings.DATABASE_URL or "pooler.supabase.com" in settings.DATABASE_URL:
+            connect_args = {
+                "sslmode": "require",
+                "options": "-c statement_timeout=30000"
+            }
+        elif "localhost" not in settings.DATABASE_URL:
+            connect_args = {"sslmode": "require"}
+        
         engine = create_engine(
             settings.DATABASE_URL,
             pool_pre_ping=True,
             pool_recycle=300,
-            connect_args={"sslmode": "require"} if "localhost" not in settings.DATABASE_URL else {}
+            pool_timeout=20,
+            max_overflow=0,
+            connect_args=connect_args
         )
         logger.info("✅ Using PostgreSQL database")
     
