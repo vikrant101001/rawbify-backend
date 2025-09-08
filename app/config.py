@@ -42,48 +42,48 @@ class Settings:
         # API Settings
         self.API_V1_STR: str = "/api"
         self.PROJECT_NAME: str = "Rawbify Backend"
-    
-    # CORS - Support multiple deployment platforms
-    CORS_ORIGINS: list = [
-        "http://localhost:3000",  # Frontend dev
-        "http://localhost:3001",
-        "https://rawbify.com",    # Production frontend
-        "https://rawbify-frontend.railway.app",  # Railway frontend
-        "https://rawbify.vercel.app",  # Vercel frontend
-        "https://*.vercel.app",   # All Vercel deployments
-        "https://*.railway.app",  # All Railway deployments
-    ]
-    
-    # File Upload
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
-    ALLOWED_FILE_TYPES: list = [".xlsx", ".xls", ".csv"]
-    
-    # Email (SendGrid or Gmail SMTP)
-    SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
-    FROM_EMAIL: str = os.getenv("FROM_EMAIL", "noreply@rawbify.com")
-    
-    # Gmail SMTP
-    GMAIL_USER: str = os.getenv("GMAIL_USER", "")
-    GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")
-    
-    # OpenAI API for AI Processing
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
-    
-    # JWT Secret Key for authentication
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-jwt-key-change-this-in-production")
-    
-    def __init__(self):
+        
+        # CORS - Support multiple deployment platforms
+        self.CORS_ORIGINS: list = [
+            "http://localhost:3000",  # Frontend dev
+            "http://localhost:3001",
+            "https://rawbify.com",    # Production frontend
+            "https://rawbify-frontend.railway.app",  # Railway frontend
+            "https://rawbify.vercel.app",  # Vercel frontend
+            "https://*.vercel.app",   # All Vercel deployments
+            "https://*.railway.app",  # All Railway deployments
+        ]
+        
+        # File Upload
+        self.MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
+        self.ALLOWED_FILE_TYPES: list = [".xlsx", ".xls", ".csv"]
+        
+        # Email (SendGrid or Gmail SMTP)
+        self.SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
+        self.FROM_EMAIL: str = os.getenv("FROM_EMAIL", "noreply@rawbify.com")
+        
+        # Gmail SMTP
+        self.GMAIL_USER: str = os.getenv("GMAIL_USER", "")
+        self.GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")
+        
+        # OpenAI API for AI Processing
+        self.OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+        
+        # JWT Secret Key for authentication
+        self.SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-jwt-key-change-this-in-production")
+        
+        # Rate Limiting
+        self.RATE_LIMIT_PER_MINUTE: int = 60
+        
+        # Environment
+        self.ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+        
+        # Log initialization
         logger.info(f"🔧 Settings initialized - OPENAI_API_KEY: {bool(self.OPENAI_API_KEY)}")
         if self.OPENAI_API_KEY:
             logger.info(f"🔧 OPENAI_API_KEY length: {len(self.OPENAI_API_KEY)}")
             logger.info(f"🔧 OPENAI_API_KEY preview: {self.OPENAI_API_KEY[:10]}...")
         else:
             logger.warning("⚠️ OPENAI_API_KEY is empty or None")
-    
-    # Rate Limiting
-    RATE_LIMIT_PER_MINUTE: int = 60
-    
-    # Environment
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
 
 settings = Settings() 
